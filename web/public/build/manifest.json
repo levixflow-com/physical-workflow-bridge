@@ -1,0 +1,49 @@
+{
+  "node_modules/@fontsource/barlow/files/barlow-latin-400-normal.woff": {
+    "file": "assets/barlow-latin-400-normal-fsAxiSwU.woff",
+    "src": "node_modules/@fontsource/barlow/files/barlow-latin-400-normal.woff"
+  },
+  "node_modules/@fontsource/barlow/files/barlow-latin-400-normal.woff2": {
+    "file": "assets/barlow-latin-400-normal-qiz4-Cze.woff2",
+    "src": "node_modules/@fontsource/barlow/files/barlow-latin-400-normal.woff2"
+  },
+  "node_modules/@fontsource/barlow/files/barlow-latin-500-normal.woff": {
+    "file": "assets/barlow-latin-500-normal-C1h8hMer.woff",
+    "src": "node_modules/@fontsource/barlow/files/barlow-latin-500-normal.woff"
+  },
+  "node_modules/@fontsource/barlow/files/barlow-latin-500-normal.woff2": {
+    "file": "assets/barlow-latin-500-normal-BPAOfeC8.woff2",
+    "src": "node_modules/@fontsource/barlow/files/barlow-latin-500-normal.woff2"
+  },
+  "node_modules/@fontsource/barlow/files/barlow-latin-600-normal.woff": {
+    "file": "assets/barlow-latin-600-normal-CNwfPWQD.woff",
+    "src": "node_modules/@fontsource/barlow/files/barlow-latin-600-normal.woff"
+  },
+  "node_modules/@fontsource/barlow/files/barlow-latin-600-normal.woff2": {
+    "file": "assets/barlow-latin-600-normal-DILqtrty.woff2",
+    "src": "node_modules/@fontsource/barlow/files/barlow-latin-600-normal.woff2"
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-CPov-EkB.css",
+    "name": "app",
+    "names": [
+      "app.css"
+    ],
+    "src": "resources/css/app.css",
+    "isEntry": true,
+    "assets": [
+      "assets/barlow-latin-400-normal-qiz4-Cze.woff2",
+      "assets/barlow-latin-400-normal-fsAxiSwU.woff",
+      "assets/barlow-latin-500-normal-BPAOfeC8.woff2",
+      "assets/barlow-latin-500-normal-C1h8hMer.woff",
+      "assets/barlow-latin-600-normal-DILqtrty.woff2",
+      "assets/barlow-latin-600-normal-CNwfPWQD.woff"
+    ]
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-BvRk9kiK.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
+  }
+}

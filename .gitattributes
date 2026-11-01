@@ -1,0 +1,5 @@
+# Files run inside Linux containers: a Windows checkout must not turn them into CRLF.
+* text=auto eol=lf
+*.mp4 binary
+*.woff2 binary
+*.ico binary

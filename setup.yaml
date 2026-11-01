@@ -1,0 +1,7 @@
+# Separate from compose.yaml, which cannot start without the .env this creates.
+services:
+  setup:
+    image: composer:2
+    volumes:
+      - ./:/repo
+    entrypoint: ["sh", "/repo/docker/setup.sh"]

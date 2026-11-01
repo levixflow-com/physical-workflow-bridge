@@ -1,0 +1,112 @@
+x-app: &app
+  image: php:8.3-cli-alpine
+  working_dir: /app
+  init: true
+  environment: &app-env
+    APP_KEY: ${APP_KEY:?set APP_KEY in .env}
+    APP_ENV: local
+    APP_DEBUG: "false"
+    APP_LOCALE: en
+    LOG_CHANNEL: stderr
+    DB_CONNECTION: sqlite
+    DB_DATABASE: /data/bridge.sqlite
+    SESSION_DRIVER: file
+    CACHE_STORE: file
+    QUEUE_CONNECTION: sync
+    SIMULATOR_ENABLED: ${SIMULATOR_ENABLED:-true}
+    MQTT_USER: ${MQTT_USER:?set MQTT_USER in .env}
+    MQTT_PASSWORD: ${MQTT_PASSWORD:?set MQTT_PASSWORD in .env}
+    DTR008_RELAY_PASSWORD: ${DTR008_RELAY_PASSWORD:-0}
+    DTR008_TOPIC_PREFIX: ${DTR008_TOPIC_PREFIX:-/dingtian/relay00000}
+  volumes:
+    - ./web:/app
+    # A Docker volume, not a PC folder: SQLite WAL is not reliable on a shared Windows folder.
+    - db:/data
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2.0.20
+    ports:
+      - "${BROKER_BIND_IP:-127.0.0.1}:1883:1883"
+    environment:
+      MQTT_USER: ${MQTT_USER:?set MQTT_USER in .env}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:?set MQTT_PASSWORD in .env}
+    volumes:
+      - ./docker/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    command:
+      - sh
+      - -c
+      - >-
+        mosquitto_passwd -c -b /tmp/passwd "$$MQTT_USER" "$$MQTT_PASSWORD" &&
+        chown mosquitto:mosquitto /tmp/passwd && chmod 0600 /tmp/passwd &&
+        exec mosquitto -c /mosquitto/config/mosquitto.conf
+
+  migrate:
+    <<: *app
+    command: sh -c "touch /data/bridge.sqlite .env && php artisan migrate --force && php artisan db:seed --force"
+
+  web:
+    <<: *app
+    environment:
+      <<: *app-env
+      PHP_CLI_SERVER_WORKERS: 4
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    # php -S and not artisan serve: artisan serve strips the compose environment variables from the server.
+    working_dir: /app/public
+    # No file check on every request: on a shared Windows folder that is the slow part.
+    # After changing PHP code, run docker compose restart web.
+    command: php -d opcache.enable=1 -d opcache.validate_timestamps=0 -S 0.0.0.0:8000 ../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php
+
+  bridge:
+    <<: *app
+    # on-failure and not unless-stopped: it must not start by itself after a PC reboot.
+    restart: on-failure
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      mosquitto:
+        condition: service_started
+    command: php artisan bridge:run
+
+  # Without the db volume: phpunit.xml does not override DB_DATABASE from x-app, and tests would hit the real database.
+  test:
+    image: php:8.3-cli-alpine
+    profiles: [tools]
+    working_dir: /app
+    environment:
+      APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+    volumes:
+      - ./web:/app
+    command: php artisan test
+
+  diag:
+    image: php:8.3-cli-alpine
+    profiles: [tools]
+    working_dir: /app
+    environment:
+      DTR008_RELAY_PASSWORD: ${DTR008_RELAY_PASSWORD:-0}
+    volumes:
+      - ./diagnostics:/app:ro
+    entrypoint: ["php", "dtr008.php"]
+
+  composer:
+    image: composer:2
+    profiles: [tools]
+    working_dir: /app
+    volumes:
+      - ./web:/app
+
+  assets:
+    image: node:22-alpine
+    profiles: [tools]
+    working_dir: /app
+    volumes:
+      - ./web:/app
+    command: sh -c "npm install --no-audit --no-fund && npm run build"
+
+volumes:
+  db:
